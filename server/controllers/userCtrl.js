@@ -6,7 +6,7 @@ import generateToken from "../utils/generate_JWT_Token.js";
 
 // @desc    Register user
 // @route   POST /api/v1/user/signup
-// @access  Private/Admin
+// @access  public
 export const signupUserCtrl = asyncHandler(async (req, res) => {
   const { fullname, email, password, role } = req.body;
 
