@@ -4,6 +4,7 @@ dotenv.config();
 import dbConnect from '../config/dbConnect.js';
 import { globalErrHandler, notFound } from '../middlewares/globalErrHandler.js';
 import userRouter from '../routes/userRoute.js';
+import ticketRouter from '../routes/ticketRoute.js';
 
 // db connect
 dbConnect();
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // routes
 app.use("/api/v1/user/", userRouter);
+app.use("/api/v1/tickets", ticketRouter);
 
 // err middleware
 app.use(notFound);
