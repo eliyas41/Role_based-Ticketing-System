@@ -45,3 +45,35 @@ export const getTicketsCtrl = asyncHandler(async (req, res) => {
     data: tickets,
   });
 });
+
+// @desc    Update a support ticket status (only admins can update all tickets)
+// @route   PUT /api/v1/tickets/:id
+// @access  Private/Admin
+export const updateTicketCtrl = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const { status } = req.body;  // Only updating status
+
+  // Find the ticket by its ID
+  let ticket = await Ticket.findById(id);
+
+  if (!ticket) {
+    throw new appError("Ticket not found", 404);
+  }
+
+  // Check if the user is an admin
+  if (req.userAuthId.role !== "admin") {
+    throw new appError("You are not authorized to update this ticket", 403);
+  }
+
+  // If admin, update the ticket's status
+  ticket.status = status || ticket.status;  // Keep current status if no new status provided
+
+  // Save the updated ticket
+  await ticket.save();
+
+  res.status(200).json({
+    status: "success",
+    message: "Ticket updated successfully",
+    data: ticket,
+  });
+});
