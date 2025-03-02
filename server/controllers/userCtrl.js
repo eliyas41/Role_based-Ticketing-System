@@ -8,7 +8,7 @@ import generateToken from "../utils/generate_JWT_Token.js";
 // @route   POST /api/v1/user/signup
 // @access  Private/Admin
 export const signupUserCtrl = asyncHandler(async (req, res) => {
-  const { fullname, email, password } = req.body;
+  const { fullname, email, password, role } = req.body;
 
   // Check user exist
   const userExist = await User.findOne({ email });
@@ -25,6 +25,7 @@ export const signupUserCtrl = asyncHandler(async (req, res) => {
     fullname,
     email,
     password: hashedPassword,
+    role: role || 'user',  // Default to 'user' if role is not provided
   });
 
   res.status(201).json({
