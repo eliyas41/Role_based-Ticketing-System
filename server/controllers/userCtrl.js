@@ -5,9 +5,9 @@ import appError from "../utils/appError.js";
 
 
 // @desc    Register user
-// @route   POST /api/v1/users/signup
+// @route   POST /api/v1/user/signup
 // @access  Private/Admin
-export const registerUserCtrl = asyncHandler(async (req, res) => {
+export const signupUserCtrl = asyncHandler(async (req, res) => {
   const { fullname, email, password } = req.body;
 
   // Check user exist
@@ -32,4 +32,28 @@ export const registerUserCtrl = asyncHandler(async (req, res) => {
     message: "User Registered Successfully",
     data: user,
   });
+});
+
+// @desc    Login user
+// @route   POST /api/v1/user/login
+// @access  Public
+export const loginUserCtrl = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  //Find the user in the database by email
+  const userFound = await User.findOne({
+    email,
+  });
+
+  const isPasswordMatched = await bcrypt.compare(password, userFound?.password);
+
+  if (userFound && isPasswordMatched) {
+    return res.json({
+      status: "success",
+      message: "User logged in successfully",
+      userFound,
+    })
+  } else {
+    throw new appError("Invalid login credentials", 401);
+  }
 });
