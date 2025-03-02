@@ -8,12 +8,16 @@ import appError from "../utils/appError.js";
 export const createTicketCtrl = asyncHandler(async (req, res) => {
   const { title, description, status } = req.body;
 
+  // extract user id from the authenticated user
+  const user_id = req.userAuthId.id;
+  // console.log(user_id)
+
   // Create the ticket linked to the authenticated user
   const ticket = await Ticket.create({
     title,
     description,
     status: status || "Open", // Default to "Open" if no status is provided
-    user: req.user.id, // Linking to the logged-in user's ID
+    user: user_id, // Linking to the logged-in user's ID
   });
 
   res.status(201).json({
