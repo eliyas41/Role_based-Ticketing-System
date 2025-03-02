@@ -2,7 +2,7 @@ import User from "../model/User.js";
 import asyncHandler from "express-async-handler"
 import bcrypt from 'bcryptjs';
 import appError from "../utils/appError.js";
-
+import generateToken from "../utils/generate_JWT_Token.js";
 
 // @desc    Register user
 // @route   POST /api/v1/user/signup
@@ -45,13 +45,18 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
     email,
   });
 
+  // Check if user password is correct with the hashed password
   const isPasswordMatched = await bcrypt.compare(password, userFound?.password);
+  // Generate token using user id and role
+  const token = generateToken({ id: userFound?._id, role: userFound?.role });
 
   if (userFound && isPasswordMatched) {
+    // if the user is found and the password is correct 
     return res.json({
       status: "success",
       message: "User logged in successfully",
       userFound,
+      token
     })
   } else {
     throw new appError("Invalid login credentials", 401);
