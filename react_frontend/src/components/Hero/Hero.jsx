@@ -70,7 +70,7 @@ export class Hero extends Component {
                                 to="/signup"
                                 className="inline-flex items-center justify-center h-12 px-6 font-medium tracking-wide text-black transition duration-200 bg-gray-50 shadow-md bg-deep-purple-accent-400 hover:bg-deep-purple-accent-700 focus:shadow-outline focus:outline-none rounded-full mr-4"
                             >
-                                signup
+                                Signup
                             </Link>
                             <Link
                                 to="/login"

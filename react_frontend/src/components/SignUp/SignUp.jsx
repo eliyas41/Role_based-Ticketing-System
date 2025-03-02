@@ -1,4 +1,7 @@
 import { Component } from 'react';
+import { Navigate } from 'react-router-dom';
+// Import from the env 
+const api_url = import.meta.env.VITE_API_URL;
 
 class SignUp extends Component {
   constructor(props) {
@@ -7,7 +10,7 @@ class SignUp extends Component {
       fullName: '',
       email: '',
       password: '',
-      role: 'User', // Default role
+      role: 'user', // Default role
       isSubmitting: false,
       redirectToLogin: false,
       error: '',
@@ -19,30 +22,43 @@ class SignUp extends Component {
     this.setState({ [name]: value });
   };
 
-  handleSubmit = (e) => {
+  handleSubmit = async (e) => {
     e.preventDefault();
+    this.setState({ isSubmitting: true, error: '' });
+
     const { fullName, email, password, role } = this.state;
 
-    // Using static data for simulating a successful registration
-    const users = [
-      { email: 'testuser@example.com', role: 'User' },
-      { email: 'admin@example.com', role: 'Admin' },
-    ];
+    try {
+      const response = await fetch(`${api_url}/user/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullname: fullName,
+          email,
+          password,
+          role,
+        }),
+      });
 
-    // Simulate successful registration (static data check)
-    const userExists = users.some(user => user.email === email);
-    if (userExists) {
-      this.setState({ error: 'Email is already taken!', isSubmitting: false });
-    } else {
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      // If successful, redirect to login page
       this.setState({ redirectToLogin: true });
+    } catch (error) {
+      this.setState({ error: error.message, isSubmitting: false });
     }
   };
 
   render() {
     if (this.state.redirectToLogin) {
-      return <div>Redirecting to Login...</div>;
+      return <Navigate to="/login" />;
     }
-
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
@@ -115,8 +131,8 @@ class SignUp extends Component {
                 onChange={this.handleInputChange}
                 className="w-full p-3 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="User">User</option>
-                <option value="Admin">Admin</option>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
               </select>
             </div>
 

@@ -1,5 +1,8 @@
 import { Component } from 'react';
 
+// Import API URL from environment variables
+const api_url = import.meta.env.VITE_API_URL;
+
 class Login extends Component {
   constructor(props) {
     super(props);
@@ -17,23 +20,36 @@ class Login extends Component {
     this.setState({ [name]: value });
   };
 
-  handleSubmit = (e) => {
+  handleSubmit = async (e) => {
     e.preventDefault();
+    this.setState({ isSubmitting: true, error: '' });
+
     const { email, password } = this.state;
 
-    // Simulating static data for login
-    const users = [
-      { email: 'testuser@example.com', password: 'password123', role: 'User' },
-      { email: 'admin@example.com', password: 'adminpassword', role: 'Admin' },
-    ];
+    try {
+      const response = await fetch(`${api_url}/user/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    // Check if the email and password match any user (static data check)
-    const user = users.find(user => user.email === email && user.password === password);
+      const data = await response.json();
+      // console.log(data.token);
 
-    if (user) {
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // ✅ Login Successful → Update state
       this.setState({ redirectToDashboard: true });
-    } else {
-      this.setState({ error: 'Invalid email or password.', isSubmitting: false });
+
+      // 🔹 You can store user info in localStorage if needed
+      localStorage.setItem('user', JSON.stringify(data.token));
+
+    } catch (error) {
+      this.setState({ error: error.message, isSubmitting: false });
     }
   };
 
@@ -45,12 +61,12 @@ class Login extends Component {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">
-            Log In
-          </h2>
+          <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">Log In</h2>
+
           {this.state.error && (
             <p className="text-red-500 text-center mb-4">{this.state.error}</p>
           )}
+
           <form onSubmit={this.handleSubmit}>
             {/* Email */}
             <div className="mb-4">
@@ -99,9 +115,7 @@ class Login extends Component {
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500">
               Do not have an account?{' '}
-              <span className="text-indigo-500 hover:text-indigo-600">
-                Sign Up
-              </span>
+              <span className="text-indigo-500 hover:text-indigo-600">Sign Up</span>
             </p>
           </div>
         </div>
