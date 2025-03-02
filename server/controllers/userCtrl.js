@@ -63,3 +63,24 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
     throw new appError("Invalid login credentials", 401);
   }
 });
+
+// @desc    Get all users if an (Admin) or user's own account (User)
+// @route   GET /api/v1/users
+// @access  Private/Admin
+export const getUserCtrl = asyncHandler(async (req, res) => {
+  let user;
+  const user_id = req.userAuthId.id
+  if (req.userAuthId.role === "admin") {
+    // Admin can see all tickets
+    user = await User.find();
+  } else {
+    // Users can only see their own tickets
+    user = await User.find({ _id: user_id });
+    console.log(user)
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: user,
+  });
+});

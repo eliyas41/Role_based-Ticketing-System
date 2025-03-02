@@ -2,51 +2,38 @@ import { Component } from "react";
 import Loader from "../Loader/Loader";
 import { Link } from "react-router-dom";
 
+// Import API URL from environment variables
+const api_url = import.meta.env.VITE_API_URL;
+
 export class Users extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            users: [
-                {
-                    id: 1,
-                    name: "John Doe",
-                    email: "john.doe@example.com",
-                    imageUrl: "https://randomuser.me/api/portraits/men/1.jpg",
-                },
-                {
-                    id: 2,
-                    name: "Jane Smith",
-                    email: "jane.smith@example.com",
-                    imageUrl: "https://randomuser.me/api/portraits/women/2.jpg",
-                },
-                {
-                    id: 3,
-                    name: "Bob Johnson",
-                    email: "bob.johnson@example.com",
-                    imageUrl: "https://randomuser.me/api/portraits/men/3.jpg",
-                },
-                {
-                    id: 4,
-                    name: "Alice Davis",
-                    email: "alice.davis@example.com",
-                    imageUrl: "https://randomuser.me/api/portraits/women/4.jpg",
-                },
-            ],
+            users: [],
             isLoading: false,
+            error: "",
         };
     }
 
-    componentDidMount() {
-        this.setState({ isLoading: true });
+    async componentDidMount() {
+        this.setState({ isLoading: true, error: "" });
 
-        // Simulating a delay for loading state, remove the setTimeout if using real API
-        setTimeout(() => {
-            this.setState({ isLoading: false });
-        }, 1000);
+        try {
+            const response = await fetch(`${api_url}/api/v1/users`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to load users");
+            }
+
+            this.setState({ users: data.users, isLoading: false });
+        } catch (error) {
+            this.setState({ error: error.message, isLoading: false });
+        }
     }
 
     render() {
-        const { users, isLoading } = this.state;
+        const { users, isLoading, error } = this.state;
 
         if (isLoading) {
             return <Loader />;
@@ -61,39 +48,40 @@ export class Users extends Component {
                 </Link>
                 <h1 className="text-2xl py-3">Users List</h1>
 
-                <ul role="list" className="divide-y divide-gray-100">
-                    {users?.map((person) => (
-                        <li key={person.email} className="flex justify-between gap-x-6 py-5">
-                            {/* User info div */}
-                            <div className="flex min-w-0 gap-x-4">
-                                <img
-                                    alt=""
-                                    src={person?.imageUrl}
-                                    className="h-12 w-12 flex-none rounded-full bg-gray-50"
-                                />
-                                <div className="min-w-0 flex-auto">
-                                    <p className="text-sm font-semibold leading-6 text-gray-900">
-                                        {person?.name}
-                                    </p>
-                                    <p className="mt-1 truncate text-xs leading-5 text-gray-500">
-                                        {person?.email}
-                                    </p>
-                                </div>
-                            </div>
+                {error && <p className="text-red-500">{error}</p>}
 
-                            {/* Buttons div */}
-                            <div className="flex gap-x-4 sm:flex-col sm:gap-2 sm:mt-2 sm:items-end md:flex-row">
-                                {/* Details button */}
-                                <div className="mt-1 flex items-center gap-x-1.5">
-                                    <Link to={`/users/${person?.id}`}>
-                                        <button className="text-xs leading-5 bg-gray-50 rounded py-1.5 px-2 hover:bg-gray-200 duration-150 text-gray-500">
-                                            Details
-                                        </button>
-                                    </Link>
+                <ul role="list" className="divide-y divide-gray-100">
+                    {users.length > 0 ? (
+                        users.map((person) => (
+                            <li key={person.email} className="flex justify-between gap-x-6 py-5">
+                                {/* User info div */}
+                                <div className="flex min-w-0 gap-x-4">
+                                    <img
+                                        alt={person.name}
+                                        src={person.imageUrl || "https://via.placeholder.com/50"}
+                                        className="h-12 w-12 flex-none rounded-full bg-gray-50"
+                                    />
+                                    <div className="min-w-0 flex-auto">
+                                        <p className="text-sm font-semibold leading-6 text-gray-900">{person.name}</p>
+                                        <p className="mt-1 truncate text-xs leading-5 text-gray-500">{person.email}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </li>
-                    ))}
+
+                                {/* Buttons div */}
+                                <div className="flex gap-x-4 sm:flex-col sm:gap-2 sm:mt-2 sm:items-end md:flex-row">
+                                    <div className="mt-1 flex items-center gap-x-1.5">
+                                        <Link to={`/users/${person.id}`}>
+                                            <button className="text-xs leading-5 bg-gray-50 rounded py-1.5 px-2 hover:bg-gray-200 duration-150 text-gray-500">
+                                                Details
+                                            </button>
+                                        </Link>
+                                    </div>
+                                </div>
+                            </li>
+                        ))
+                    ) : (
+                        <p className="text-gray-500">No users found.</p>
+                    )}
                 </ul>
             </section>
         );
