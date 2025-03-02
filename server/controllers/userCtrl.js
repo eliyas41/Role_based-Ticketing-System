@@ -1,20 +1,20 @@
 import User from "../model/User.js";
-import bcrypt from 'bcryptjs'
+import asyncHandler from "express-async-handler"
+import bcrypt from 'bcryptjs';
+import appError from "../utils/appError.js";
+
 
 // @desc    Register user
 // @route   POST /api/v1/users/signup
 // @access  Private/Admin
-export const registerUserCtrl = async (req, res) => {
+export const registerUserCtrl = asyncHandler(async (req, res) => {
   const { fullname, email, password } = req.body;
 
   // Check user exist
   const userExist = await User.findOne({ email });
   if (userExist) {
     // throw
-    return res.status(400).json({
-      status: "fail",
-      message: "User already exist",
-    });
+    throw new appError("User already exist", 400);
   }
 
   // hash password
@@ -32,4 +32,4 @@ export const registerUserCtrl = async (req, res) => {
     message: "User Registered Successfully",
     data: user,
   });
-};
+});
