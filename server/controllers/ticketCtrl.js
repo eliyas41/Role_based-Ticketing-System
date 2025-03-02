@@ -26,3 +26,22 @@ export const createTicketCtrl = asyncHandler(async (req, res) => {
     data: ticket,
   });
 });
+
+// @desc    Get all tickets (Admin) or user's own tickets (User)
+// @route   GET /api/v1/tickets
+// @access  Private
+export const getTicketsCtrl = asyncHandler(async (req, res) => {
+  let tickets;
+  if (req.userAuthId.role === "admin") {
+    // Admin can see all tickets
+    tickets = await Ticket.find();
+  } else {
+    // Users can only see their own tickets
+    tickets = await Ticket.find({ user: req.userAuthId.id });
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: tickets,
+  });
+});
