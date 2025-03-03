@@ -1,5 +1,5 @@
 import { Component } from "react";
-import Users from "../components/Users/Users";
+import Users from "../components/Dashboard/Users";
 
 class UsersPage extends Component {
     render() {

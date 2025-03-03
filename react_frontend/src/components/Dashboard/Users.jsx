@@ -1,9 +1,7 @@
 import { Component } from "react";
 import Loader from "../Loader/Loader";
-import { Link } from "react-router-dom";
 import getAuth from "../../utils/auth";
-import { getTickets, createTicket, updateTicketStatus } from "../ticketService"; // Create service for API calls
-
+import { getTickets, createTicket, updateTicketStatus } from "../../utils/ticketService";
 const api_url = import.meta.env.VITE_API_URL;
 
 class Users extends Component {
