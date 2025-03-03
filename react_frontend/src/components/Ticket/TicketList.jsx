@@ -45,7 +45,7 @@ class TicketList extends Component {
           <thead className="bg-gray-100">
             <tr>
               <th className="px-4 py-2 border">Ticket Title</th>
-              <th className="px-4 py-2 border">Description</th>
+              <th className="px-4 py-2 border hidden md:table-cell">Description</th>
               <th className="px-4 py-2 border">Status</th>
               {isAdmin && <th className="px-4 py-2 border">Actions</th>}
             </tr>
@@ -54,10 +54,8 @@ class TicketList extends Component {
             {tickets.map((ticket) => (
               <tr key={ticket._id} className="hover:bg-gray-50">
                 <td className="px-4 py-2 border">{ticket.title}</td>
-                <td className="px-4 py-2 border">{ticket.description}</td>
-                <td className="px-4 py-2 border">
-                  {ticket.status}
-                </td>
+                <td className="px-4 py-2 border hidden md:table-cell">{ticket.description}</td>
+                <td className="px-4 py-2 border">{ticket.status}</td>
                 {isAdmin && (
                   <td className="px-4 py-2 border">
                     <TicketActions
