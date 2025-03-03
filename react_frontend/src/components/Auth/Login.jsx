@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 
 // Import API URL from environment variables
 const api_url = import.meta.env.VITE_API_URL;
@@ -120,7 +120,12 @@ class Login extends Component {
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500">
               Do not have an account?{' '}
-              <span className="text-indigo-500 hover:text-indigo-600">Sign Up</span>
+              <Link
+                to="/signup" // Using the Link component for internal navigation
+                className="text-indigo-500 hover:text-indigo-600"
+              >
+                Sign Up
+              </Link>
             </p>
           </div>
         </div>

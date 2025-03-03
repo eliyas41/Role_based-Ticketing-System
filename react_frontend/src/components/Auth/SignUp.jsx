@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 // Import from the env 
 const api_url = import.meta.env.VITE_API_URL;
 
@@ -149,9 +149,12 @@ class SignUp extends Component {
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500">
               Already have an account?{' '}
-              <span className="text-indigo-500 hover:text-indigo-600">
-                Log In
-              </span>
+              <Link
+                to="/login"
+                className="text-indigo-500 hover:text-indigo-600"
+              >
+                Login
+              </Link>
             </p>
           </div>
         </div>
