@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import TicketList from "../Ticket/TicketList";
 import { FaUserCircle } from "react-icons/fa";
 import getAuth from "../../utils/auth";
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 
 class AdminDashboard extends Component {
   state = {
@@ -53,6 +53,12 @@ class AdminDashboard extends Component {
             {/* Dropdown Menu */}
             {isDropdownOpen && (
               <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md overflow-hidden z-50">
+                <Link
+                  to="/"
+                  className="block w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
+                >
+                  Home
+                </Link>
                 <button
                   onClick={this.handleLogout}
                   className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100"
