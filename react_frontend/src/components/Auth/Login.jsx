@@ -66,6 +66,23 @@ class Login extends Component {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
+          <Link to="/" className="mb-6 sm:mx-auto">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50">
+              <svg
+                className="w-10 h-10 text-deep-purple-accent-400"
+                stroke="currentColor"
+                viewBox="0 0 52 52"
+              >
+                <polygon
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                  points="29 13 14 29 25 29 23 39 38 23 27 23"
+                />
+              </svg>
+            </div>
+          </Link>
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">Log In</h2>
 
           {this.state.error && (
@@ -119,9 +136,9 @@ class Login extends Component {
 
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500">
-              Do not have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link
-                to="/signup" // Using the Link component for internal navigation
+                to="/signup"
                 className="text-indigo-500 hover:text-indigo-600"
               >
                 Sign Up

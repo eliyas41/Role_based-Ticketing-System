@@ -46,6 +46,10 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
     email,
   });
 
+  if (!userFound) {
+    throw new appError("User not found", 404);
+  }
+
   // Check if user password is correct with the hashed password
   const isPasswordMatched = await bcrypt.compare(password, userFound?.password);
   const user_id = userFound?._id;
