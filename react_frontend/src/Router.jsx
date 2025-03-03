@@ -5,11 +5,16 @@ import UserDetailsPage from "./Pages/UserDetailsPage";
 import Login from "./components/Login/Login";
 import SignUp from "./components/SignUp/SignUp";
 import ProtectedRoute from "./utils/PrivateAuthRoute";
+import Unauthorized from "./Pages/Unauthorize";
 
 export const router = createBrowserRouter([
     {
         path: "/",
         element: <LandingPage />
+    },
+    {
+        path: "/unauthorized",
+        element: <Unauthorized />
     },
     {
         path: "/signup",
