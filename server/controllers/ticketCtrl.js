@@ -32,7 +32,7 @@ export const createTicketCtrl = asyncHandler(async (req, res) => {
 // @access  Private
 export const getTicketsCtrl = asyncHandler(async (req, res) => {
   let tickets;
-  const user_id = req.userAuthId.id;
+  const user_id = req.userAuthId.user_id;
 
   if (req.userAuthId.role === "admin") {
     // Admin can see all tickets

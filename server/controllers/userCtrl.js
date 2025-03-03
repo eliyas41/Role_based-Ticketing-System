@@ -48,8 +48,18 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
 
   // Check if user password is correct with the hashed password
   const isPasswordMatched = await bcrypt.compare(password, userFound?.password);
+  const user_id = userFound?._id;
+  const role = userFound?.role;
+  const payload = {
+    user_id,
+    role
+  }
   // Generate token using user id and role
-  const token = generateToken({ id: userFound?._id, role: userFound?.role });
+  const token = generateToken(payload);
+
+  const sendBack = {
+    user_token: token,
+  };
 
   if (userFound && isPasswordMatched) {
     // if the user is found and the password is correct 
@@ -57,7 +67,7 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
       status: "success",
       message: "User logged in successfully",
       userFound,
-      token
+      sendBack
     })
   } else {
     throw new appError("Invalid login credentials", 401);
@@ -69,14 +79,13 @@ export const loginUserCtrl = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 export const getUserCtrl = asyncHandler(async (req, res) => {
   let user;
-  const user_id = req.userAuthId.id
+  const user_id = req.userAuthId.user_id;
   if (req.userAuthId.role === "admin") {
     // Admin can see all tickets
     user = await User.find();
   } else {
     // Users can only see their own tickets
     user = await User.find({ _id: user_id });
-    console.log(user)
   }
 
   res.status(200).json({

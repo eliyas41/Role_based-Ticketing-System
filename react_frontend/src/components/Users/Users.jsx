@@ -19,14 +19,32 @@ export class Users extends Component {
         this.setState({ isLoading: true, error: "" });
 
         try {
-            const response = await fetch(`${api_url}/api/v1/users`);
+            // Get the auth token from localStorage
+            const user = JSON.parse(localStorage.getItem("user"));
+            console.log(user)
+            const token = user ? user.user_token : null; // Ensure token is retrieved properly
+
+            if (!token) {
+                throw new Error("Invalid/Expired token, please login again");
+            }
+
+            // Fetch users with Authorization header
+            const response = await fetch(`${api_url}/user`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // Attach the token here
+                },
+            });
+
             const data = await response.json();
+            console.log(data.data);
 
             if (!response.ok) {
                 throw new Error(data.message || "Failed to load users");
             }
 
-            this.setState({ users: data.users, isLoading: false });
+            this.setState({ users: data.data, isLoading: false });
         } catch (error) {
             this.setState({ error: error.message, isLoading: false });
         }

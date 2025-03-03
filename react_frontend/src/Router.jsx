@@ -4,11 +4,12 @@ import UsersPage from "./Pages/UsersPage";
 import UserDetailsPage from "./Pages/UserDetailsPage";
 import Login from "./components/Login/Login";
 import SignUp from "./components/SignUp/SignUp";
+import ProtectedRoute from "./utils/PrivateAuthRoute";
 
 export const router = createBrowserRouter([
     {
         path: "/",
-        element: <LandingPage />,
+        element: <LandingPage />
     },
     {
         path: "/signup",
@@ -20,10 +21,18 @@ export const router = createBrowserRouter([
     },
     {
         path: "/users",
-        element: <UsersPage />,
+        element: (
+            <ProtectedRoute roles={["admin"]}>
+                <UsersPage />
+            </ProtectedRoute>
+        ),
     },
     {
         path: "/users/:id",
-        element: <UserDetailsPage />,
+        element: (
+            <ProtectedRoute>
+                <UserDetailsPage />
+            </ProtectedRoute>
+        ),
     },
 ]);

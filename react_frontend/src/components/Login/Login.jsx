@@ -36,7 +36,7 @@ class Login extends Component {
       });
 
       const data = await response.json();
-      // console.log(data.token);
+      // console.log(data.sendBack);
 
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
@@ -46,7 +46,7 @@ class Login extends Component {
       this.setState({ redirectToDashboard: true });
 
       // 🔹 You can store user info in localStorage if needed
-      localStorage.setItem('user', JSON.stringify(data.token));
+      localStorage.setItem('user', JSON.stringify(data.sendBack));
 
     } catch (error) {
       this.setState({ error: error.message, isSubmitting: false });

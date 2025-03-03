@@ -15,23 +15,29 @@ export class AuthProvider extends Component {
     };
   }
 
-  componentDidMount() {
-    // Retrieve the logged in user from local storage
-    const loggedInUser = getAuth();
-    loggedInUser.then((response) => {
-      if (response.user_token) {
+  componentDidMount = async () => {
+    try {
+      // Retrieve the logged-in user from local storage using await
+      const loggedInUser = await getAuth();
+      console.log(loggedInUser);
+
+      if (loggedInUser.user_token) {
         this.setState({
           isLogged: true,
-          isAdmin: response.is_admin === 'admin',
-          user: response,
+          isAdmin: loggedInUser.role === 'admin',
+          user: loggedInUser.role === 'user',
         });
       }
-    });
-  }
+    } catch (error) {
+      console.error("Error fetching authentication:", error);
+    }
+  };
+
 
   render() {
     const { isLogged, isAdmin, user } = this.state;
     const value = { isLogged, isAdmin, user };
+    console.log(value)
 
     return (
       <AuthContext.Provider value={value}>

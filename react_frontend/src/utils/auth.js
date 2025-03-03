@@ -1,10 +1,11 @@
 // Function to read the data from the user's local storage  
 const getAuth = async () => {
   const user = await JSON.parse(localStorage.getItem('user'));
-  if (user) {
-    const decodedToken = await decodeTokenPayload(user);
-    user.user_id = decodedToken.user_id;
-    user.is_admin = decodedToken.is_admin;
+  if (user && user.user_token) {
+    const decodedToken = await decodeTokenPayload(user.user_token);
+    user.user_id = decodedToken.payload.user_id;
+    user.role = decodedToken.payload.role;
+
     return user;
   } else {
     return {};
