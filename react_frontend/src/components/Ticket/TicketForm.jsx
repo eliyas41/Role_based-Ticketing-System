@@ -8,6 +8,7 @@ class TicketForm extends Component {
     description: "",
     isLoading: false,
     error: "",
+    successMessage: "",
   };
 
   handleInputChange = (e) => {
@@ -23,7 +24,7 @@ class TicketForm extends Component {
       return;
     }
 
-    this.setState({ isLoading: true, error: "" });
+    this.setState({ isLoading: true, error: "", successMessage: "" });
 
     try {
       const loggedInUser = await getAuth();
@@ -31,19 +32,30 @@ class TicketForm extends Component {
 
       const newTicket = await createTicket(token, { title, description });
 
-      this.setState({ title: "", description: "", isLoading: false });
-      // Optionally, you can lift the state to the parent component to update the ticket list
+      this.setState({
+        title: "",
+        description: "",
+        isLoading: false,
+        successMessage: "Ticket created successfully!"
+      });
+
+      setTimeout(() => {
+        this.setState({ successMessage: "" });
+      }, 3000);
     } catch (error) {
       this.setState({ error: error.message, isLoading: false });
     }
   };
 
   render() {
-    const { title, description, error } = this.state;
+    const { title, description, error, successMessage } = this.state;
     return (
       <form onSubmit={this.handleSubmit} className="bg-gray-100 p-4 rounded mb-6">
         <h2 className="text-lg font-semibold mb-2">Create a New Ticket</h2>
         {error && <p className="text-red-500">{error}</p>}
+        {successMessage && (
+          <p className="text-green-500">{successMessage}</p> // Success message display
+        )}
         <input
           type="text"
           name="title"
@@ -59,7 +71,9 @@ class TicketForm extends Component {
           onChange={this.handleInputChange}
           className="w-full p-2 border rounded mb-2"
         ></textarea>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded">Create</button>
+        <button className="bg-blue-500 text-white px-4 py-2 rounded">
+          {this.state.isLoading ? "Creating..." : "Create"}
+        </button>
       </form>
     );
   }
