@@ -39,9 +39,12 @@ class TicketForm extends Component {
         successMessage: "Ticket created successfully!"
       });
 
+      // Set timeout to clear success message and reload the page after 3 seconds
       setTimeout(() => {
         this.setState({ successMessage: "" });
-      }, 3000);
+        window.location.reload();
+      }, 1000);
+
     } catch (error) {
       this.setState({ error: error.message, isLoading: false });
     }
