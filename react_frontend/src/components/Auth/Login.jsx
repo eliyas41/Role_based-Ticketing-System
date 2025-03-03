@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { Navigate } from 'react-router-dom';
 
 // Import API URL from environment variables
 const api_url = import.meta.env.VITE_API_URL;
@@ -11,7 +12,7 @@ class Login extends Component {
       password: '',
       isSubmitting: false,
       error: '',
-      redirectToDashboard: false,
+      redirectTo: null, // Store redirection path
     };
   }
 
@@ -36,17 +37,20 @@ class Login extends Component {
       });
 
       const data = await response.json();
-      // console.log(data.sendBack);
+      // console.log(data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
 
-      // ✅ Login Successful → Update state
-      this.setState({ redirectToDashboard: true });
-
-      // 🔹 You can store user info in localStorage if needed
+      // Store user info in localStorage if needed
       localStorage.setItem('user', JSON.stringify(data.sendBack));
+
+      // Determine redirection path based on user role
+      const userRole = data.userFound.role;
+      const redirectTo = userRole === 'admin' ? '/admin-dashboard' : '/user-dashboard';
+
+      this.setState({ redirectTo }); // Set redirection path
 
     } catch (error) {
       this.setState({ error: error.message, isSubmitting: false });
@@ -54,8 +58,9 @@ class Login extends Component {
   };
 
   render() {
-    if (this.state.redirectToDashboard) {
-      return <div>Redirecting to Dashboard...</div>;
+    // Redirect if a valid route is set
+    if (this.state.redirectTo) {
+      return <Navigate to={this.state.redirectTo} />;
     }
 
     return (
