@@ -1,106 +1,168 @@
 import { Component } from "react";
 import Loader from "../Loader/Loader";
 import { Link } from "react-router-dom";
+import getAuth from "../../utils/auth";
+import { getTickets, createTicket, updateTicketStatus } from "../ticketService"; // Create service for API calls
 
-// Import API URL from environment variables
 const api_url = import.meta.env.VITE_API_URL;
 
-export class Users extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            users: [],
-            isLoading: false,
-            error: "",
-        };
-    }
+class Users extends Component {
+    state = {
+        tickets: [],
+        title: "",
+        description: "",
+        isLoading: false,
+        error: "",
+        userRole: "", // To store the user role
+    };
 
     async componentDidMount() {
         this.setState({ isLoading: true, error: "" });
 
         try {
-            // Get the auth token from localStorage
-            const user = JSON.parse(localStorage.getItem("user"));
-            console.log(user)
-            const token = user ? user.user_token : null; // Ensure token is retrieved properly
-
-            if (!token) {
+            const loggedInUser = await getAuth();
+            if (!loggedInUser || !loggedInUser.user_token) {
                 throw new Error("Invalid/Expired token, please login again");
             }
 
-            // Fetch users with Authorization header
-            const response = await fetch(`${api_url}/user`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`, // Attach the token here
-                },
-            });
+            const { user_token: token, role } = loggedInUser;
+            const tickets = await getTickets(token);
 
-            const data = await response.json();
-            console.log(data.data);
-
-            if (!response.ok) {
-                throw new Error(data.message || "Failed to load users");
-            }
-
-            this.setState({ users: data.data, isLoading: false });
+            this.setState({ tickets, isLoading: false, userRole: role }); // Save the user role
         } catch (error) {
             this.setState({ error: error.message, isLoading: false });
         }
     }
 
-    render() {
-        const { users, isLoading, error } = this.state;
+    handleInputChange = (e) => {
+        this.setState({ [e.target.name]: e.target.value });
+    };
 
-        if (isLoading) {
-            return <Loader />;
+    handleSubmit = async (e) => {
+        e.preventDefault();
+        const { title, description } = this.state;
+
+        if (!title || !description) {
+            this.setState({ error: "Title and description are required." });
+            return;
         }
 
-        return (
-            <section className="px-4 py-16 mx-auto sm:max-w-xl md:max-w-full lg:max-w-screen-xl md:px-24 lg:px-8 lg:py-20">
-                <Link to="/">
-                    <button className="bg-gray-500 hover:bg-gray-700 text-white font-semibold py-1 px-4 rounded">
-                        Home
-                    </button>
-                </Link>
-                <h1 className="text-2xl py-3">Users List</h1>
+        this.setState({ isLoading: true, error: "" });
 
+        try {
+            const loggedInUser = await getAuth();
+            const { user_token: token } = loggedInUser;
+
+            const newTicket = await createTicket(token, { title, description });
+
+            this.setState((prevState) => ({
+                tickets: [...prevState.tickets, newTicket],
+                title: "",
+                description: "",
+                isLoading: false,
+            }));
+        } catch (error) {
+            this.setState({ error: error.message, isLoading: false });
+        }
+    };
+
+    handleStatusUpdate = async (ticketId, newStatus) => {
+        const { userRole } = this.state;
+        if (userRole !== "admin") {
+            alert("You are not authorized to update the ticket status.");
+            return;
+        }
+
+        try {
+            const loggedInUser = await getAuth();
+            const { user_token: token } = loggedInUser;
+
+            // Call the updateTicketStatus function from the service
+            const updatedTicket = await updateTicketStatus(token, ticketId, newStatus);
+
+            this.setState((prevState) => ({
+                tickets: prevState.tickets.map(ticket =>
+                    ticket._id === updatedTicket._id ? updatedTicket : ticket
+                ),
+            }));
+        } catch (error) {
+            console.error("Error updating ticket status:", error.message);
+            this.setState({ error: error.message });
+        }
+    };
+
+    render() {
+        const { tickets, title, description, isLoading, error, userRole } = this.state;
+
+        if (isLoading) return <Loader />;
+
+        return (
+            <section className="max-w-4xl mx-auto p-6">
+                <h1 className="text-2xl font-bold mb-4">User Dashboard</h1>
                 {error && <p className="text-red-500">{error}</p>}
 
-                <ul role="list" className="divide-y divide-gray-100">
-                    {users.length > 0 ? (
-                        users.map((person) => (
-                            <li key={person.email} className="flex justify-between gap-x-6 py-5">
-                                {/* User info div */}
-                                <div className="flex min-w-0 gap-x-4">
-                                    <img
-                                        alt={person.name}
-                                        src={person.imageUrl || "https://via.placeholder.com/50"}
-                                        className="h-12 w-12 flex-none rounded-full bg-gray-50"
-                                    />
-                                    <div className="min-w-0 flex-auto">
-                                        <p className="text-sm font-semibold leading-6 text-gray-900">{person.name}</p>
-                                        <p className="mt-1 truncate text-xs leading-5 text-gray-500">{person.email}</p>
-                                    </div>
-                                </div>
+                {/* Ticket Form */}
+                <form onSubmit={this.handleSubmit} className="bg-gray-100 p-4 rounded mb-6">
+                    <h2 className="text-lg font-semibold mb-2">Create a New Ticket</h2>
+                    <input
+                        type="text"
+                        name="title"
+                        placeholder="Title"
+                        value={title}
+                        onChange={this.handleInputChange}
+                        className="w-full p-2 border rounded mb-2"
+                    />
+                    <textarea
+                        name="description"
+                        placeholder="Description"
+                        value={description}
+                        onChange={this.handleInputChange}
+                        className="w-full p-2 border rounded mb-2"
+                    ></textarea>
+                    <button className="bg-blue-500 text-white px-4 py-2 rounded">Submit</button>
+                </form>
 
-                                {/* Buttons div */}
-                                <div className="flex gap-x-4 sm:flex-col sm:gap-2 sm:mt-2 sm:items-end md:flex-row">
-                                    <div className="mt-1 flex items-center gap-x-1.5">
-                                        <Link to={`/users/${person.id}`}>
-                                            <button className="text-xs leading-5 bg-gray-50 rounded py-1.5 px-2 hover:bg-gray-200 duration-150 text-gray-500">
-                                                Details
-                                            </button>
-                                        </Link>
+                {/* Ticket List */}
+                <h2 className="text-lg font-semibold mb-2">
+                    {userRole === "admin" ? "List of Tickets" : "Your Tickets"}
+                </h2>
+                {tickets.length > 0 ? (
+                    <ul className="divide-y divide-gray-200">
+                        {tickets.map((ticket) => (
+                            <li key={ticket._id} className="p-4 bg-white rounded shadow mb-2">
+                                <h3 className="font-semibold text-gray-800">{ticket.title}</h3>
+                                <p className="text-gray-600">{ticket.description}</p>
+                                <span className="text-sm text-gray-500">Status: {ticket.status}</span>
+
+                                {/* Only admins can see this button */}
+                                {userRole === "admin" && (
+                                    <div className="mt-2">
+                                        <button
+                                            onClick={() => this.handleStatusUpdate(ticket._id, "Open")}
+                                            className="bg-blue-500 text-white px-4 py-2 rounded"
+                                        >
+                                            Mark as Open
+                                        </button>
+                                        <button
+                                            onClick={() => this.handleStatusUpdate(ticket._id, "In Progress")}
+                                            className="bg-yellow-500 text-white px-4 py-2 rounded ml-2"
+                                        >
+                                            Mark as In Progress
+                                        </button>
+                                        <button
+                                            onClick={() => this.handleStatusUpdate(ticket._id, "Closed")}
+                                            className="bg-red-500 text-white px-4 py-2 rounded ml-2"
+                                        >
+                                            Mark as Closed
+                                        </button>
                                     </div>
-                                </div>
+                                )}
                             </li>
-                        ))
-                    ) : (
-                        <p className="text-gray-500">No users found.</p>
-                    )}
-                </ul>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-gray-500">No tickets found.</p>
+                )}
             </section>
         );
     }

@@ -9,8 +9,7 @@ export const createTicketCtrl = asyncHandler(async (req, res) => {
   const { title, description, status } = req.body;
 
   // extract user id from the authenticated user
-  const user_id = req.userAuthId.id;
-  // console.log(user_id)
+  const user_id = req.userAuthId.user_id;
 
   // Create the ticket linked to the authenticated user
   const ticket = await Ticket.create({
@@ -33,6 +32,9 @@ export const createTicketCtrl = asyncHandler(async (req, res) => {
 export const getTicketsCtrl = asyncHandler(async (req, res) => {
   let tickets;
   const user_id = req.userAuthId.user_id;
+  if (!user_id) {
+    throw new appError("User not authenticated or no user ID found", 400);
+  }
 
   if (req.userAuthId.role === "admin") {
     // Admin can see all tickets
