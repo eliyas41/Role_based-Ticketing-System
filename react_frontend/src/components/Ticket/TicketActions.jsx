@@ -9,8 +9,7 @@ const TicketActions = ({ ticket }) => {
       const { user_token: token } = loggedInUser;
 
       const updatedTicket = await updateTicketStatus(token, ticket._id, newStatus);
-      console.log(updatedTicket)
-      // Optionally, update state in parent component
+      // Optionally, you can lift the state to the parent component to update the ticket list
     } catch (error) {
       console.error("Error updating ticket status:", error.message);
     }
