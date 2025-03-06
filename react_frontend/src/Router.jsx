@@ -6,6 +6,7 @@ import ProtectedRoute from "./utils/PrivateAuthRoute";
 import Unauthorized from "./Pages/Unauthorize";
 import AdminDashboard from "./components/Dashboard/AdminDashboard";
 import UserDashboard from "./components/Dashboard/UserDashboard";
+import NotFoundPage from "./Pages/NotFoundPage";
 
 export const router = createBrowserRouter([
     {
@@ -15,6 +16,10 @@ export const router = createBrowserRouter([
     {
         path: "/unauthorized",
         element: <Unauthorized />
+    },
+    {
+        path: "*",
+        element: < NotFoundPage />
     },
     {
         path: "/signup",
