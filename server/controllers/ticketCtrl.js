@@ -31,17 +31,13 @@ export const createTicketCtrl = asyncHandler(async (req, res) => {
 // @access  Private
 export const getTicketsCtrl = asyncHandler(async (req, res) => {
   let tickets;
-  const user_id = req.userAuthId.user_id;
-  if (!user_id) {
-    throw new appError("User not authenticated or no user ID found", 400);
-  }
 
   if (req.userAuthId.role === "admin") {
-    // Admin can see all tickets
-    tickets = await Ticket.find();
+    // Admin can see all tickets with user details
+    tickets = await Ticket.find().populate("user", "fullname email");
   } else {
     // Users can only see their own tickets
-    tickets = await Ticket.find({ user: user_id });
+    tickets = await Ticket.find({ user: req.userAuthId.user_id }).populate("user", "fullname email");
   }
 
   res.status(200).json({

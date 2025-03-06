@@ -1,14 +1,15 @@
 import React, { Component } from "react";
-import TicketActions from "../Ticket/TicketActions"; // You can import this if needed
+import { Table, Tag, Spin, Alert, Input } from "antd";
+import TicketActions from "../Ticket/TicketActions";
 import getAuth from "../../utils/auth";
 import { getTickets } from "../../utils/ticketService";
-import Loader from '../Loader/Loader';
 
 class TicketList extends Component {
   state = {
     tickets: [],
     isLoading: false,
     error: "",
+    searchText: "",
   };
 
   async componentDidMount() {
@@ -33,46 +34,94 @@ class TicketList extends Component {
     }));
   };
 
+  handleSearch = (e) => {
+    this.setState({ searchText: e.target.value });
+  };
+
   render() {
-    const { tickets, isLoading, error } = this.state;
+    const { tickets, isLoading, error, searchText } = this.state;
     const { isAdmin } = this.props;
 
-    if (isLoading) return < Loader />;
+    // Filter tickets based on search input
+    const filteredTickets = tickets.filter(
+      (ticket) =>
+        ticket.title.toLowerCase().includes(searchText.toLowerCase()) ||
+        ticket.user.email.toLowerCase().includes(searchText.toLowerCase())
+    );
+
+    const columns = [
+      {
+        title: "Full Name",
+        dataIndex: ["user", "fullname"],
+        key: "fullname",
+        responsive: ["md"], // Hides on small screens
+      },
+      {
+        title: "Email",
+        dataIndex: ["user", "email"],
+        key: "email",
+      },
+      {
+        title: "Ticket Title",
+        dataIndex: "title",
+        key: "title",
+        responsive: ["md"]
+      },
+      {
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
+        responsive: ["md"], // Hides on small screens
+      },
+      {
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
+        render: (status) => (
+          <Tag color={
+            status === "Open" ? "green" :
+              status === "In Progress" ? "yellow" :
+                "volcano"
+          }>{status}</Tag>
+
+        ),
+      },
+    ];
+
+    if (isAdmin) {
+      columns.push({
+        title: "Actions",
+        key: "actions",
+        render: (text, ticket) => (
+          <TicketActions
+            ticket={ticket}
+            onStatusChange={this.handleStatusChange}
+          />
+        ),
+      });
+    }
 
     return (
-      <div className="overflow-x-auto">
-        {error && <p className="text-red-500">{error}</p>}
+      <div className="p-4 bg-white rounded shadow">
+        {error && <Alert message="Error" description={error} type="error" showIcon />}
 
-        {tickets.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">You don’t have any tickets.</p>
+        <Input
+          placeholder="Search by title or email..."
+          allowClear
+          onChange={this.handleSearch}
+          style={{ marginBottom: 16, width: "50%" }}
+        />
+
+        {isLoading ? (
+          <Spin tip="Loading Tickets..." className="flex justify-center" />
         ) : (
-          <table className="min-w-full table-auto">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-2 border">Ticket Title</th>
-                <th className="px-4 py-2 border hidden md:table-cell">Description</th>
-                <th className="px-4 py-2 border">Status</th>
-                {isAdmin && <th className="px-4 py-2 border">Actions</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {tickets.map((ticket) => (
-                <tr key={ticket._id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 border">{ticket.title}</td>
-                  <td className="px-4 py-2 border hidden md:table-cell">{ticket.description}</td>
-                  <td className="px-4 py-2 border">{ticket.status}</td>
-                  {isAdmin && (
-                    <td className="px-4 py-2 border">
-                      <TicketActions
-                        ticket={ticket}
-                        onStatusChange={this.handleStatusChange}
-                      />
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Table
+            columns={columns}
+            dataSource={filteredTickets}
+            rowKey="_id"
+            bordered
+            pagination={{ pageSize: 5 }}
+          />
         )}
       </div>
     );
