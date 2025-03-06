@@ -1,7 +1,8 @@
 import { Component } from "react";
 import { Navigate, Link } from "react-router-dom";
+import { Form, Input, Button, Card, Typography, Alert, Spin, Select, Row, Col } from "antd";
+import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 
-// Import from the env
 const api_url = import.meta.env.VITE_API_URL;
 
 class SignUp extends Component {
@@ -11,7 +12,7 @@ class SignUp extends Component {
       fullName: "",
       email: "",
       password: "",
-      role: "user", // Default role
+      role: "user",
       isSubmitting: false,
       redirectToLogin: false,
       error: "",
@@ -24,42 +25,27 @@ class SignUp extends Component {
     this.setState({ [name]: value });
   };
 
-  handleSubmit = async (e) => {
-    e.preventDefault();
+  handleRoleChange = (value) => {
+    this.setState({ role: value });
+  };
+
+  handleSubmit = async (values) => {
     this.setState({ isSubmitting: true, error: "", successMessage: "" });
-
-    const { fullName, email, password, role } = this.state;
-
     try {
       const response = await fetch(`${api_url}/user/signup`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullname: fullName,
-          email,
-          password,
-          role,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Registration failed");
 
-      if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
-      }
-
-      // Show success message before redirecting
       this.setState({
         successMessage: "Successfully registered! Redirecting to login...",
         isSubmitting: false,
       });
-
-      // Wait for 2 seconds before redirecting
-      setTimeout(() => {
-        this.setState({ redirectToLogin: true });
-      }, 2000);
+      setTimeout(() => this.setState({ redirectToLogin: true }), 2000);
     } catch (error) {
       this.setState({ error: error.message, isSubmitting: false });
     }
@@ -71,141 +57,46 @@ class SignUp extends Component {
     }
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-          <Link to="/" className="mb-6 sm:mx-auto">
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50">
-              <svg
-                className="w-10 h-10 text-deep-purple-accent-400"
-                stroke="currentColor"
-                viewBox="0 0 52 52"
-              >
-                <polygon
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                  points="29 13 14 29 25 29 23 39 38 23 27 23"
-                />
-              </svg>
-            </div>
-          </Link>
-          <h2 className="text-2xl font-bold text-center text-gray-900 mb-8">
-            Sign Up
-          </h2>
+      <Row justify="center" align="middle" style={{ minHeight: "100vh", background: "#f4f4f4" }}>
+        <Col xs={22} sm={18} md={12} lg={8}>
+          <Card bordered={false} style={{ boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
+            <Typography.Title level={2} className="text-center">Sign Up</Typography.Title>
+            {this.state.error && <Alert message={this.state.error} type="error" showIcon className="mb-3" />}
+            {this.state.successMessage && <Alert message={this.state.successMessage} type="success" showIcon className="mb-3" />}
 
-          {/* Success Message */}
-          {this.state.successMessage && (
-            <p className="text-green-500 text-center mb-4">
-              {this.state.successMessage}
-            </p>
-          )}
+            <Form layout="vertical" onFinish={this.handleSubmit}>
+              <Form.Item name="fullname" label="Full Name" rules={[{ required: true, message: "Enter your full name!" }]}>
+                <Input prefix={<UserOutlined />} placeholder="Enter your full name" />
+              </Form.Item>
 
-          {/* Error Message */}
-          {this.state.error && (
-            <p className="text-red-500 text-center mb-4">{this.state.error}</p>
-          )}
+              <Form.Item name="email" label="Email" rules={[{ required: true, message: "Enter your email!" }, { type: "email", message: "Invalid email!" }]}>
+                <Input prefix={<MailOutlined />} placeholder="Enter your email" />
+              </Form.Item>
 
-          <form onSubmit={this.handleSubmit}>
-            {/* Full Name */}
-            <div className="mb-4">
-              <label
-                htmlFor="fullName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="fullName"
-                name="fullName"
-                value={this.state.fullName}
-                onChange={this.handleInputChange}
-                className="w-full p-3 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter your full name"
-                required
-              />
-            </div>
+              <Form.Item name="password" label="Password" rules={[{ required: true, message: "Enter your password!" }]}>
+                <Input.Password prefix={<LockOutlined />} placeholder="Enter your password" />
+              </Form.Item>
 
-            {/* Email */}
-            <div className="mb-4">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={this.state.email}
-                onChange={this.handleInputChange}
-                className="w-full p-3 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter your email"
-                required
-              />
-            </div>
+              <Form.Item name="role" label="Role" initialValue="user">
+                <Select onChange={this.handleRoleChange}>
+                  <Select.Option value="user">User</Select.Option>
+                  <Select.Option value="admin">Admin</Select.Option>
+                </Select>
+              </Form.Item>
 
-            {/* Password */}
-            <div className="mb-4">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={this.state.password}
-                onChange={this.handleInputChange}
-                className="w-full p-3 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
+              <Form.Item>
+                <Button type="primary" htmlType="submit" block disabled={this.state.isSubmitting}>
+                  {this.state.isSubmitting ? <Spin size="small" /> : "Sign Up"}
+                </Button>
+              </Form.Item>
+            </Form>
 
-            {/* Role Selection */}
-            <div className="mb-4">
-              <label
-                htmlFor="role"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Role
-              </label>
-              <select
-                name="role"
-                value={this.state.role}
-                onChange={this.handleInputChange}
-                className="w-full p-3 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={this.state.isSubmitting}
-              className="w-full p-3 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              {this.state.isSubmitting ? "Registering..." : "Sign Up"}
-            </button>
-          </form>
-
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-500">
-              Already have an account?{" "}
-              <Link to="/login" className="text-indigo-500 hover:text-indigo-600">
-                Login
-              </Link>
-            </p>
-          </div>
-        </div>
-      </div>
+            <Typography.Text className="text-center">
+              Already have an account? <Link to="/login">Log In</Link>
+            </Typography.Text>
+          </Card>
+        </Col>
+      </Row>
     );
   }
 }
