@@ -1,7 +1,6 @@
 import { Component } from "react";
 import { Navigate } from "react-router";
 import getAuth from "../utils/auth";
-import Loader from "../components/Loader/Loader";
 
 class PrivateAuthRoute extends Component {
   constructor(props) {
@@ -45,7 +44,7 @@ class PrivateAuthRoute extends Component {
 
     // Wait until the authentication check is completed
     if (!isChecked) {
-      return <Loader />;
+      return <h1>Loading</h1>;
     }
 
     // If the user is not logged in, redirect to the login page

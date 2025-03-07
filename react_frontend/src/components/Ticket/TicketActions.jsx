@@ -1,12 +1,14 @@
 import React, { useState } from "react";
+import { Select, message } from "antd";
 import { updateTicketStatus } from "../../utils/ticketService";
 import getAuth from "../../utils/auth";
+
+const { Option } = Select;
 
 const TicketActions = ({ ticket, onStatusChange }) => {
   const [newStatus, setNewStatus] = useState(ticket.status);
 
-  const handleStatusChange = async (e) => {
-    const selectedStatus = e.target.value;
+  const handleStatusChange = async (selectedStatus) => {
     setNewStatus(selectedStatus);
 
     try {
@@ -19,9 +21,10 @@ const TicketActions = ({ ticket, onStatusChange }) => {
         onStatusChange(ticket._id, selectedStatus); // Update the parent component with new status
       }
 
-      console.log(updatedTicket); // Optional: You can log the updated ticket response
+      message.success("Ticket status updated successfully!");
     } catch (error) {
       console.error("Error updating ticket status:", error.message);
+      message.error("Failed to update ticket status.");
     }
   };
 
@@ -29,27 +32,29 @@ const TicketActions = ({ ticket, onStatusChange }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case "Open":
-        return "bg-green-500";
+        return "green";
       case "In Progress":
-        return "bg-yellow-500";
+        return "orange";
       case "Closed":
-        return "bg-red-500";
+        return "red";
       default:
-        return "bg-gray-500";
+        return "gray";
     }
   };
 
   return (
     <div className="mt-2">
-      <select
+      <Select
         value={newStatus}
         onChange={handleStatusChange}
-        className={`p-2 border rounded ${getStatusColor(newStatus)} text-white`}
+        style={{ width: 120 }} // Adjust the width here to make it smaller
+        dropdownStyle={{ backgroundColor: '#f5f5f5' }}
+        className={`ticket-status-select-${getStatusColor(newStatus)}`}
       >
-        <option value="Open">Open</option>
-        <option value="In Progress">In Progress</option>
-        <option value="Closed">Closed</option>
-      </select>
+        <Option value="Open" className="text-green-500">Open</Option>
+        <Option value="In Progress" className="text-yellow-500">In Progress</Option>
+        <Option value="Closed" className="text-red-500">Closed</Option>
+      </Select>
     </div>
   );
 };

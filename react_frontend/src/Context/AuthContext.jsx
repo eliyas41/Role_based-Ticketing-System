@@ -1,5 +1,6 @@
 import { Component, createContext } from "react";
-import getAuth from '../utils/auth';  // Assuming this is a utility function to get user data
+//his is a utility function to get user data
+import getAuth from '../utils/auth';
 
 // Create a context object  
 const AuthContext = createContext();
@@ -19,7 +20,7 @@ export class AuthProvider extends Component {
     try {
       // Retrieve the logged-in user from local storage using await
       const loggedInUser = await getAuth();
-      console.log(loggedInUser);
+      // console.log(loggedInUser);
 
       if (loggedInUser.user_token) {
         this.setState({
@@ -37,7 +38,7 @@ export class AuthProvider extends Component {
   render() {
     const { isLogged, isAdmin, user } = this.state;
     const value = { isLogged, isAdmin, user };
-    console.log(value)
+    // console.log(value)
 
     return (
       <AuthContext.Provider value={value}>

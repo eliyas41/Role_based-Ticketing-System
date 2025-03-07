@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Input, Button, Form, Modal, message } from "antd";
 import { createTicket } from "../../utils/ticketService";
 import getAuth from "../../utils/auth";
 
@@ -9,15 +10,15 @@ class TicketForm extends Component {
     isLoading: false,
     error: "",
     successMessage: "",
+    isModalVisible: false, // State to control modal visibility
   };
 
   handleInputChange = (e) => {
     this.setState({ [e.target.name]: e.target.value });
   };
 
-  handleSubmit = async (e) => {
-    e.preventDefault();
-    const { title, description } = this.state;
+  handleSubmit = async (values) => {
+    const { title, description } = values;
 
     if (!title || !description) {
       this.setState({ error: "Title and description are required." });
@@ -36,48 +37,96 @@ class TicketForm extends Component {
         title: "",
         description: "",
         isLoading: false,
-        successMessage: "Ticket created successfully!"
+        successMessage: "Ticket created successfully!",
       });
 
       // Set timeout to clear success message and reload the page after 3 seconds
       setTimeout(() => {
         this.setState({ successMessage: "" });
         window.location.reload();
-      }, 1000);
+      }, 2000);
 
     } catch (error) {
       this.setState({ error: error.message, isLoading: false });
+      message.error(error.message); // Display error message using Ant Design's message component
     }
   };
 
+  showModal = () => {
+    this.setState({
+      isModalVisible: true, // Show modal when button is clicked
+    });
+  };
+
+  handleCancel = () => {
+    this.setState({
+      isModalVisible: false, // Close the modal when cancel button is clicked
+    });
+  };
+
   render() {
-    const { title, description, error, successMessage } = this.state;
+    const { title, description, error, successMessage, isLoading, isModalVisible } = this.state;
+
     return (
-      <form onSubmit={this.handleSubmit} className="bg-gray-100 p-4 rounded mb-6">
-        <h2 className="text-lg font-semibold mb-2">Create a New Ticket</h2>
-        {error && <p className="text-red-500">{error}</p>}
-        {successMessage && (
-          <p className="text-green-500">{successMessage}</p> // Success message display
-        )}
-        <input
-          type="text"
-          name="title"
-          placeholder="Title"
-          value={title}
-          onChange={this.handleInputChange}
-          className="w-full p-2 border rounded mb-2"
-        />
-        <textarea
-          name="description"
-          placeholder="Description"
-          value={description}
-          onChange={this.handleInputChange}
-          className="w-full p-2 border rounded mb-2"
-        ></textarea>
-        <button className="bg-blue-500 text-white px-4 py-2 rounded">
-          {this.state.isLoading ? "Creating..." : "Create"}
-        </button>
-      </form>
+      <div>
+        <Button type="primary" onClick={this.showModal}>Create Ticket</Button>
+
+        <Modal
+          visible={isModalVisible}
+          onCancel={this.handleCancel}
+          footer={null} // Hide the default footer
+          destroyOnClose // Destroy the modal content on close to reset the form state
+        >
+          <Form
+            onFinish={this.handleSubmit}
+            layout="vertical"
+          >
+            <h2 className="text-lg font-semibold mb-2">Create a New Ticket</h2>
+
+            {error && <p className="text-red-500">{error}</p>}
+            {successMessage && (
+              <p className="text-green-500">{successMessage}</p>
+            )}
+
+            <Form.Item
+              label="Title"
+              name="title"
+              rules={[{ required: true, message: "Please enter the title!" }]}
+            >
+              <Input
+                placeholder="Enter ticket title"
+                value={title}
+                onChange={this.handleInputChange}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Description"
+              name="description"
+              rules={[{ required: true, message: "Please enter a description!" }]}
+            >
+              <Input.TextArea
+                placeholder="Enter ticket description"
+                value={description}
+                onChange={this.handleInputChange}
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="small"
+                block
+                loading={isLoading}
+                style={{ width: 'auto', float: 'left' }}
+              >
+                {isLoading ? "Creating..." : "Create Ticket"}
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
+      </div>
     );
   }
 }
