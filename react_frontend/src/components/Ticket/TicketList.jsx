@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Table, Tag, Spin, Alert, Input } from "antd";
+import { Table, Tag, Spin, Alert, Input, Button } from "antd";
 import TicketActions from "../Ticket/TicketActions";
 import getAuth from "../../utils/auth";
 import { getTickets } from "../../utils/ticketService";
@@ -10,6 +10,7 @@ class TicketList extends Component {
     isLoading: false,
     error: "",
     searchText: "",
+    expandedDescription: {} // Track which description is expanded
   };
 
   async componentDidMount() {
@@ -38,11 +39,19 @@ class TicketList extends Component {
     this.setState({ searchText: e.target.value });
   };
 
+  toggleDescription = (ticketId) => {
+    this.setState((prevState) => ({
+      expandedDescription: {
+        ...prevState.expandedDescription,
+        [ticketId]: !prevState.expandedDescription[ticketId]
+      }
+    }));
+  };
+
   render() {
-    const { tickets, isLoading, error, searchText } = this.state;
+    const { tickets, isLoading, error, searchText, expandedDescription } = this.state;
     const { isAdmin } = this.props;
 
-    // Filter tickets based on search input
     const filteredTickets = tickets.filter(
       (ticket) =>
         ticket.title.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -50,12 +59,6 @@ class TicketList extends Component {
     );
 
     const columns = [
-      {
-        title: "Full Name",
-        dataIndex: ["user", "fullname"],
-        key: "fullname",
-        responsive: ["md"], // Hides on small screens
-      },
       {
         title: "Email",
         dataIndex: ["user", "email"],
@@ -65,25 +68,65 @@ class TicketList extends Component {
         title: "Ticket Title",
         dataIndex: "title",
         key: "title",
-        responsive: ["md"]
+        render: (text) => (
+          <div
+            style={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              maxWidth: 100,
+            }}
+          >
+            {text}
+          </div>
+        ),
       },
       {
         title: "Description",
         dataIndex: "description",
         key: "description",
-        responsive: ["md"], // Hides on small screens
+        render: (text, record) => {
+          const isExpanded = expandedDescription[record._id];
+          const displayedText = isExpanded ? text : text.slice(0, 100); // Truncate to 100 characters
+
+          return (
+            <div>
+              <div
+                style={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: 200,
+                }}
+              >
+                {displayedText}
+              </div>
+              {text.length > 100 && (
+                <Button
+                  type="link"
+                  onClick={() => this.toggleDescription(record._id)}
+                >
+                  {isExpanded ? "See Less" : "See More"}
+                </Button>
+              )}
+            </div>
+          );
+        },
       },
       {
         title: "Status",
         dataIndex: "status",
         key: "status",
         render: (status) => (
-          <Tag color={
-            status === "Open" ? "green" :
-              status === "In Progress" ? "yellow" :
-                "volcano"
-          }>{status}</Tag>
-
+          <Tag
+            color={
+              status === "Open" ? "green" :
+                status === "In Progress" ? "yellow" :
+                  "volcano"
+            }
+          >
+            {status}
+          </Tag>
         ),
       },
     ];
@@ -102,26 +145,31 @@ class TicketList extends Component {
     }
 
     return (
-      <div className="p-4 bg-white rounded shadow">
+      <div className="p-4 bg-white rounded shadow md:overflow-x-hidden">
         {error && <Alert message="Error" description={error} type="error" showIcon />}
 
         <Input
           placeholder="Search by title or email..."
           allowClear
           onChange={this.handleSearch}
-          style={{ marginBottom: 16, width: "50%" }}
+          style={{ marginBottom: 16, maxWidth: "100%" }}
         />
 
         {isLoading ? (
-          <Spin tip="Loading Tickets..." className="flex justify-center" />
+          <div className="flex justify-center">
+            <Spin tip="Loading Tickets..." />
+          </div>
         ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredTickets}
-            rowKey="_id"
-            bordered
-            pagination={{ pageSize: 5 }}
-          />
+          <div className="overflow-x-auto md:overflow-x-hidden">
+            <Table
+              columns={columns}
+              dataSource={filteredTickets}
+              rowKey="_id"
+              bordered
+              pagination={{ pageSize: 5 }}
+              scroll={{ x: "max-content" }}
+            />
+          </div>
         )}
       </div>
     );

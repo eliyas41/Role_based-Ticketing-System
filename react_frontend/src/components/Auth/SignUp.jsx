@@ -59,6 +59,23 @@ class SignUp extends Component {
     return (
       <Row justify="center" align="middle" style={{ minHeight: "100vh", background: "#f4f4f4" }}>
         <Col xs={22} sm={18} md={12} lg={8}>
+          <Link to="/" className="mb-6 sm:mx-auto flex items-center justify-center">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50">
+              <svg
+                className="w-10 h-10 text-deep-purple-accent-400"
+                stroke="currentColor"
+                viewBox="0 0 52 52"
+              >
+                <polygon
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                  points="29 13 14 29 25 29 23 39 38 23 27 23"
+                />
+              </svg>
+            </div>
+          </Link>
           <Card bordered={false} style={{ boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}>
             <Typography.Title level={2} className="text-center">Sign Up</Typography.Title>
             {this.state.error && <Alert message={this.state.error} type="error" showIcon className="mb-3" />}
